@@ -153,10 +153,10 @@ public class GossipCore {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } catch (ExecutionException e) {
-      System.err.println(e);
+      LOGGER.error(e.getMessage(), e);
       return null;
     } catch (TimeoutException e) {
-      System.err.println(e);
+      LOGGER.error(e.getMessage(), e);
       return null; 
     } finally {
       if (t != null){
