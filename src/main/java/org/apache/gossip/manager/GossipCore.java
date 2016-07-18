@@ -215,14 +215,14 @@ public class GossipCore {
       if (remoteMember.getId().equals(gossipManager.getMyself().getId())) {
         continue;
       }
-      if (gossipManager.getMemberList().contains(remoteMember)) {
-        LocalGossipMember localMember = gossipManager.getMemberList().get(
-                gossipManager.getMemberList().indexOf(remoteMember));
+      if (gossipManager.getLiveMembers().contains(remoteMember)) {
+        LocalGossipMember localMember = gossipManager.getLiveMembers().get(
+                gossipManager.getLiveMembers().indexOf(remoteMember));
         if (remoteMember.getHeartbeat() > localMember.getHeartbeat()) {
           localMember.setHeartbeat(remoteMember.getHeartbeat());
           localMember.resetTimeoutTimer();
         }
-      } else if (!gossipManager.getMemberList().contains(remoteMember)
+      } else if (!gossipManager.getLiveMembers().contains(remoteMember)
               && !gossipManager.getDeadList().contains(remoteMember)) {
         LocalGossipMember newLocalMember = new LocalGossipMember(remoteMember.getClusterName(),
                 remoteMember.getUri(), remoteMember.getId(),
@@ -247,14 +247,14 @@ public class GossipCore {
             LOGGER.debug("me " + gossipManager.getMyself());
             LOGGER.debug("sender " + senderMember);
             LOGGER.debug("remote " + remoteList);
-            LOGGER.debug("live " + gossipManager.getMemberList());
+            LOGGER.debug("live " + gossipManager.getLiveMembers());
             LOGGER.debug("dead " + gossipManager.getDeadList());
           }
         } else {
           LOGGER.debug("me " + gossipManager.getMyself());
           LOGGER.debug("sender " + senderMember);
           LOGGER.debug("remote " + remoteList);
-          LOGGER.debug("live " + gossipManager.getMemberList());
+          LOGGER.debug("live " + gossipManager.getLiveMembers());
           LOGGER.debug("dead " + gossipManager.getDeadList());
           // throw new IllegalArgumentException("wtf");
         }

@@ -136,7 +136,7 @@ public abstract class GossipManager extends Thread implements NotificationListen
    * 
    * @return a read only list of members found in the UP state
    */
-  public List<LocalGossipMember> getMemberList() {
+  public List<LocalGossipMember> getLiveMembers() {
     List<LocalGossipMember> up = new ArrayList<>();
     for (Entry<LocalGossipMember, GossipState> entry : members.entrySet()) {
       if (GossipState.UP.equals(entry.getValue())) {
