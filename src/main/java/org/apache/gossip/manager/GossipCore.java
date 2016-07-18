@@ -207,7 +207,7 @@ public class GossipCore {
                 senderMember.getUri(), senderMember.getId(),
                 senderMember.getHeartbeat(), gossipManager, gossipManager.getSettings()
                         .getCleanupInterval());
-        gossipManager.revivieMember(newLocalMember);
+        gossipManager.reviveMember(newLocalMember);
         newLocalMember.startTimeoutTimer();
       }
     }
@@ -228,7 +228,7 @@ public class GossipCore {
                 remoteMember.getUri(), remoteMember.getId(),
                 remoteMember.getHeartbeat(), gossipManager, gossipManager.getSettings()
                         .getCleanupInterval());
-        gossipManager.createOrRevivieMember(newLocalMember);
+        gossipManager.createOrReviveMember(newLocalMember);
         newLocalMember.startTimeoutTimer();
       } else {
         if (gossipManager.getDeadList().contains(remoteMember)) {
@@ -239,7 +239,7 @@ public class GossipCore {
                     remoteMember.getUri(), remoteMember.getId(),
                     remoteMember.getHeartbeat(), gossipManager, gossipManager.getSettings()
                             .getCleanupInterval());
-            gossipManager.revivieMember(newLocalMember);
+            gossipManager.reviveMember(newLocalMember);
             newLocalMember.startTimeoutTimer();
             LOGGER.debug("Removed remote member " + remoteMember.getAddress()
                     + " from dead list and added to local member list.");
