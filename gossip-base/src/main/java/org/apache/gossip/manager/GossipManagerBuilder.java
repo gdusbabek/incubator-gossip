@@ -25,8 +25,8 @@ import org.apache.gossip.GossipSettings;
 import org.apache.gossip.StartupSettings;
 import org.apache.gossip.crdt.CrdtModule;
 import org.apache.gossip.event.GossipListener;
-import org.apache.gossip.manager.handlers.DefaultMessageInvoker;
 import org.apache.gossip.manager.handlers.MessageInvoker;
+import org.apache.gossip.manager.handlers.MessageInvokerFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public class GossipManagerBuilder {
         objectMapper.configure(Feature.WRITE_NUMBERS_AS_STRINGS, false);
       }
       if (messageInvoker == null) {
-        messageInvoker = new DefaultMessageInvoker();
+        messageInvoker = MessageInvokerFactory.defaultInvoker();
       } 
       return new GossipManager(cluster, uri, id, properties, settings, gossipMembers, listener, registry, objectMapper, messageInvoker) {} ;
     }

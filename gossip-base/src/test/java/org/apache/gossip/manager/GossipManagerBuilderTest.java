@@ -21,7 +21,6 @@ import com.codahale.metrics.MetricRegistry;
 import org.apache.gossip.Member;
 import org.apache.gossip.GossipSettings;
 import org.apache.gossip.LocalMember;
-import org.apache.gossip.manager.handlers.DefaultMessageInvoker;
 import org.apache.gossip.manager.handlers.MessageInvoker;
 import org.apache.gossip.manager.handlers.ResponseHandler;
 import org.apache.gossip.manager.handlers.SimpleMessageInvoker;
@@ -85,7 +84,6 @@ public class GossipManagerBuilderTest {
         .gossipSettings(new GossipSettings())
         .messageInvoker(null).registry(new MetricRegistry()).build();
     assertNotNull(gossipManager.getMessageInvoker());
-    Assert.assertEquals(gossipManager.getMessageInvoker().getClass(), new DefaultMessageInvoker().getClass());
   }
 
   @Test
