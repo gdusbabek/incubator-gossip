@@ -69,6 +69,6 @@ public class ActiveGossipMessageHandler implements MessageHandler {
     o.setUriFrom(activeGossipMessage.getUriFrom());
     o.setUuid(activeGossipMessage.getUuid());
     gossipCore.sendOneWay(o, senderMember.getUri());
-    gossipCore.mergeLists(gossipManager, senderMember, remoteGossipMembers);
+    gossipCore.mergeLists(senderMember, remoteGossipMembers);
   }
 }

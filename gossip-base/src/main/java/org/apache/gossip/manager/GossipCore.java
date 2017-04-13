@@ -304,13 +304,11 @@ public class GossipCore implements GossipCoreConstants {
   /**
    * Merge lists from remote members and update heartbeats
    *
-   * @param gossipManager
    * @param senderMember
    * @param remoteList
    *
    */
-  public void mergeLists(GossipManager gossipManager, RemoteMember senderMember,
-          List<Member> remoteList) {
+  public void mergeLists(RemoteMember senderMember, List<Member> remoteList) {
     if (LOGGER.isDebugEnabled()){
       debugState(senderMember, remoteList);
     }
