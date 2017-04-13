@@ -353,7 +353,7 @@ public class GossipCore implements GossipCoreConstants {
 
   private void debugState(RemoteMember senderMember,
           List<Member> remoteList){
-    LOGGER.warn(
+    LOGGER.trace(
           "-----------------------\n" +
           "Me " + gossipManager.getMyself() + "\n" +
           "Sender " + senderMember + "\n" +
