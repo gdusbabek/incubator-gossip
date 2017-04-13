@@ -177,7 +177,7 @@ public class GossipCore implements GossipCoreConstants {
   }
 
   public void receive(Base base) {
-    if (!gossipManager.getMessageInvoker().invoke(this, gossipManager, base)) {
+    if (!gossipManager.getMessageHandler().invoke(this, gossipManager, base)) {
       LOGGER.warn("received message can not be handled");
     }
   }

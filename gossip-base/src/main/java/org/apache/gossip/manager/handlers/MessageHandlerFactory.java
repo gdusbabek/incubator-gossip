@@ -29,27 +29,28 @@ import org.apache.gossip.model.ShutdownMessage;
 
 import java.util.Arrays;
 
-public class MessageInvokerFactory {
+public class MessageHandlerFactory {
   
-  public static MessageInvoker defaultInvoker() {
-    return concurrentInvoker(
-        new SimpleMessageInvoker(Response.class, new ResponseHandler()),
-        new SimpleMessageInvoker(ShutdownMessage.class, new ShutdownMessageHandler()),
-        new SimpleMessageInvoker(PerNodeDataMessage.class, new PerNodeDataMessageHandler()),
-        new SimpleMessageInvoker(SharedDataMessage.class, new SharedDataMessageHandler()),
-        new SimpleMessageInvoker(ActiveGossipMessage.class, new ActiveGossipMessageHandler())
+  public static MessageHandler defaultHandler() {
+    return concurrentHandler(
+        new TypedMessageHandler(Response.class, new ResponseHandler()),
+        new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
+        new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler()),
+        new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler()),
+        new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler())
     );
   }
   
-  public static MessageInvoker concurrentInvoker(MessageInvoker... invokers) {
-    if (invokers == null) throw new NullPointerException("invokers cannot be null");
-    if (Arrays.asList(invokers).stream().filter(i -> i != null).count() != invokers.length) {
-      throw new NullPointerException("found at least one null invoker");
+  public static MessageHandler concurrentHandler(MessageHandler... handlers) {
+    if (handlers == null) throw new NullPointerException("handlers cannot be null");
+    if (Arrays.asList(handlers).stream().filter(i -> i != null).count() != handlers.length) {
+      throw new NullPointerException("found at least one null handler");
     }
-    return new MessageInvoker() {
+    return new MessageHandler() {
       @Override
       public boolean invoke(GossipCore gossipCore, GossipManager gossipManager, Base base) {
-        return Arrays.asList(invokers).stream().filter((mi) -> mi.invoke(gossipCore, gossipManager, base)).count() > 0;
+        // return true if at least one of the component handlers return true.
+        return Arrays.asList(handlers).stream().filter((mi) -> mi.invoke(gossipCore, gossipManager, base)).count() > 0;
       }
     };
   }
