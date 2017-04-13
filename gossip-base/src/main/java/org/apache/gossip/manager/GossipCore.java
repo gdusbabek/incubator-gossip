@@ -257,29 +257,10 @@ public class GossipCore implements GossipCoreConstants {
    * @param message the message to send
    * @param u the uri to send it to
    */
-  public void sendOneWay(Base message, URI u){
-    byte[] json_bytes;
+  public void sendOneWay(Base message, URI u) {
     try {
-      if (privKey == null){
-        json_bytes = gossipManager.getObjectMapper().writeValueAsBytes(message);
-      } else {
-        SignedPayload p = new SignedPayload();
-        p.setData(gossipManager.getObjectMapper().writeValueAsString(message).getBytes());
-        p.setSignature(sign(p.getData()));
-        json_bytes = gossipManager.getObjectMapper().writeValueAsBytes(p);
-      }
-    } catch (IOException e) {
-      messageSerdeException.mark();
-      throw new RuntimeException(e);
-    }
-    try (DatagramSocket socket = new DatagramSocket()) {
-      socket.setSoTimeout(gossipManager.getSettings().getGossipInterval() * 2);
-      InetAddress dest = InetAddress.getByName(u.getHost());
-      DatagramPacket datagramPacket = new DatagramPacket(json_bytes, json_bytes.length, dest, u.getPort());
-      socket.send(datagramPacket);
-      tranmissionSuccess.mark();
-    } catch (IOException ex) {
-      tranmissionException.mark();
+      sendInternal(message, u);
+    } catch (RuntimeException ex) {
       LOGGER.debug("Send one way failed", ex);
     }
   }
