@@ -57,7 +57,6 @@ public class GossipCore implements GossipCoreConstants {
   public static final Logger LOGGER = Logger.getLogger(GossipCore.class);
   private final GossipManager gossipManager;
   private ConcurrentHashMap<String, LatchAndBase> requests;
-  private ThreadPoolExecutor service;
   private final ConcurrentHashMap<String, ConcurrentHashMap<String, PerNodeDataMessage>> perNodeData;
   private final ConcurrentHashMap<String, SharedDataMessage> sharedData;
   private final BlockingQueue<Runnable> workQueue;
@@ -71,15 +70,12 @@ public class GossipCore implements GossipCoreConstants {
     this.gossipManager = manager;
     requests = new ConcurrentHashMap<>();
     workQueue = new ArrayBlockingQueue<>(1024);
-    service = new ThreadPoolExecutor(1, 5, 1, TimeUnit.SECONDS, workQueue, new ThreadPoolExecutor.DiscardOldestPolicy());
     perNodeData = new ConcurrentHashMap<>();
     sharedData = new ConcurrentHashMap<>();
     metrics.register(WORKQUEUE_SIZE, (Gauge<Integer>)() -> workQueue.size());
     metrics.register(PER_NODE_DATA_SIZE, (Gauge<Integer>)() -> perNodeData.size());
     metrics.register(SHARED_DATA_SIZE, (Gauge<Integer>)() ->  sharedData.size());
     metrics.register(REQUEST_SIZE, (Gauge<Integer>)() ->  requests.size());
-    metrics.register(THREADPOOL_ACTIVE, (Gauge<Integer>)() ->  service.getActiveCount());
-    metrics.register(THREADPOOL_SIZE, (Gauge<Integer>)() ->  service.getPoolSize());
     messageSerdeException = metrics.meter(MESSAGE_SERDE_EXCEPTION);
     tranmissionException = metrics.meter(MESSAGE_TRANSMISSION_EXCEPTION);
     tranmissionSuccess = metrics.meter(MESSAGE_TRANSMISSION_SUCCESS);
@@ -178,13 +174,6 @@ public class GossipCore implements GossipCoreConstants {
   }
 
   public void shutdown(){
-    service.shutdown();
-    try {
-      service.awaitTermination(1, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      LOGGER.warn(e);
-    }
-    service.shutdownNow();
   }
 
   public void receive(Base base) {
