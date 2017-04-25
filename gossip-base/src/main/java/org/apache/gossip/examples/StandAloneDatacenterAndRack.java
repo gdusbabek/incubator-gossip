@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.gossip.GossipSettings;
 import org.apache.gossip.RemoteMember;
-import org.apache.gossip.manager.DatacenterRackAwareActiveGossiper;
+import org.apache.gossip.manager.DatacenterRackAwareGossipStrategy;
 import org.apache.gossip.manager.GossipManager;
 import org.apache.gossip.manager.GossipManagerBuilder;
 
@@ -36,14 +36,14 @@ public class StandAloneDatacenterAndRack {
     GossipSettings s = new GossipSettings();
     s.setWindowSize(1000);
     s.setGossipInterval(100);
-    s.setActiveGossipClass(DatacenterRackAwareActiveGossiper.class.getName());
+    s.setGossipStrategy(DatacenterRackAwareGossipStrategy.class.getName());
     Map<String, String> gossipProps = new HashMap<>();
     gossipProps.put("sameRackGossipIntervalMs", "2000");
     gossipProps.put("differentDatacenterGossipIntervalMs", "10000");
     s.setActiveGossipProperties(gossipProps);
     Map<String, String> props = new HashMap<>();
-    props.put(DatacenterRackAwareActiveGossiper.DATACENTER, args[4]);
-    props.put(DatacenterRackAwareActiveGossiper.RACK, args[5]);
+    props.put(DatacenterRackAwareGossipStrategy.DATACENTER, args[4]);
+    props.put(DatacenterRackAwareGossipStrategy.RACK, args[5]);
     GossipManager manager = GossipManagerBuilder.newBuilder()
             .cluster("mycluster")
             .uri(URI.create(args[0]))

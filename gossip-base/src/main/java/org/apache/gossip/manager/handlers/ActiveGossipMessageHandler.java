@@ -19,12 +19,15 @@ package org.apache.gossip.manager.handlers;
 
 import org.apache.gossip.Member;
 import org.apache.gossip.RemoteMember;
+import org.apache.gossip.manager.ClusterModel;
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
+import org.apache.gossip.manager.MessagingManager;
 import org.apache.gossip.model.Base;
 import org.apache.gossip.udp.UdpActiveGossipMessage;
 import org.apache.gossip.udp.UdpActiveGossipOk;
 import org.apache.gossip.udp.UdpNotAMemberFault;
+import org.apache.log4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,14 +36,15 @@ import java.util.List;
 
 public class ActiveGossipMessageHandler implements MessageHandler {
   
+  private static final Logger LOGGER = Logger.getLogger(ActiveGossipMessageHandler.class);
+  
   /**
-   * @param gossipCore context.
    * @param gossipManager context.
    * @param base message reference.
    * @return boolean indicating success.
    */
   @Override
-  public boolean invoke(GossipCore gossipCore, GossipManager gossipManager, Base base) {
+  public boolean invoke(GossipManager gossipManager, Base base) {
     List<Member> remoteGossipMembers = new ArrayList<>();
     RemoteMember senderMember = null;
     UdpActiveGossipMessage activeGossipMessage = (UdpActiveGossipMessage) base;
@@ -49,7 +53,7 @@ public class ActiveGossipMessageHandler implements MessageHandler {
       try {
         u = new URI(activeGossipMessage.getMembers().get(i).getUri());
       } catch (URISyntaxException e) {
-        GossipCore.LOGGER.debug("Gossip message with faulty URI", e);
+        LOGGER.debug("Gossip message with faulty URI", e);
         continue;
       }
       RemoteMember member = new RemoteMember(
@@ -66,8 +70,8 @@ public class ActiveGossipMessageHandler implements MessageHandler {
         f.setException("Not a member of this cluster " + i);
         f.setUriFrom(activeGossipMessage.getUriFrom());
         f.setUuid(activeGossipMessage.getUuid());
-        GossipCore.LOGGER.warn(f);
-        gossipCore.sendOneWay(f, member.getUri());
+        LOGGER.warn(f);
+        gossipManager.getMessaging().sendOneWay(f, member.getUri());
         continue;
       }
       remoteGossipMembers.add(member);
@@ -75,8 +79,8 @@ public class ActiveGossipMessageHandler implements MessageHandler {
     UdpActiveGossipOk o = new UdpActiveGossipOk();
     o.setUriFrom(activeGossipMessage.getUriFrom());
     o.setUuid(activeGossipMessage.getUuid());
-    gossipCore.sendOneWay(o, senderMember.getUri());
-    gossipCore.mergeLists(senderMember, remoteGossipMembers);
+    gossipManager.getMessaging().sendOneWay(o, senderMember.getUri());
+    gossipManager.getState().mergeLists(senderMember, remoteGossipMembers);
     return true;
   }
 }

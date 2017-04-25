@@ -32,6 +32,8 @@ public class RingPersistenceTest {
   @Test
   public void givenThatRingIsPersisted() throws UnknownHostException, InterruptedException, URISyntaxException {
     GossipSettings settings = new GossipSettings();
+    settings.setTransportManagerClass("org.apache.gossip.transport.UnitTestTransportManager");
+    settings.setProtocolManagerClass("org.apache.gossip.protocol.UnitTestProtocolManager");
     File f = aGossiperPersists(settings);
     Assert.assertTrue(f.exists());
     aNewInstanceGetsRingInfo(settings);

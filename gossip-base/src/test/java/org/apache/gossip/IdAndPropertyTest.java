@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit; 
 
-import org.apache.gossip.manager.DatacenterRackAwareActiveGossiper;
+import org.apache.gossip.manager.DatacenterRackAwareGossipStrategy;
 import org.apache.gossip.manager.GossipManager;
 import org.apache.gossip.manager.GossipManagerBuilder;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class IdAndPropertyTest extends AbstractIntegrationBase {
   @Test
   public void testDatacenterRackGossiper() throws URISyntaxException, UnknownHostException, InterruptedException {
     GossipSettings settings = new GossipSettings();
-    settings.setActiveGossipClass(DatacenterRackAwareActiveGossiper.class.getName());
+    settings.setGossipStrategy(DatacenterRackAwareGossipStrategy.class.getName());
     settings.setTransportManagerClass("org.apache.gossip.transport.UnitTestTransportManager");
     settings.setProtocolManagerClass("org.apache.gossip.protocol.UnitTestProtocolManager");
     List<Member> startupMembers = new ArrayList<>();

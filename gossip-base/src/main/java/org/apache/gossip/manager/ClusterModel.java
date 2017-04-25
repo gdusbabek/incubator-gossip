@@ -15,26 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.gossip.manager.handlers;
+package org.apache.gossip.manager;
 
-import org.apache.gossip.manager.GossipManager;
-import org.apache.gossip.model.Base;
-import org.apache.gossip.udp.Trackable;
+import org.apache.gossip.GossipSettings;
+import org.apache.gossip.LocalMember;
+import org.apache.gossip.event.GossipState;
+import org.apache.gossip.model.PerNodeDataMessage;
+import org.apache.gossip.model.SharedDataMessage;
 
-public class ResponseHandler implements MessageHandler {
-  
-  /**
-   * @param gossipManager context.
-   * @param base message reference.
-   * @return boolean indicating success.
-   */
-  @Override
-  public boolean invoke(GossipManager gossipManager, Base base) {
-    if (base instanceof Trackable) {
-      Trackable t = (Trackable) base;
-      gossipManager.getMessaging().handleResponse(t.getUuid() + "/" + t.getUriFrom(), base);
-      return true;
-    }
-    return false;
-  }
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+/** The main intent of this class is to limit the exposure of its primary implemenation (GossipManager). */
+public interface ClusterModel {
+  Map<LocalMember, GossipState> getMembers();
+  List<LocalMember> getLiveMembers();
+  List<LocalMember> getDeadMembers();
+  Collection<SharedDataMessage> getSharedData();
+  Collection<PerNodeDataMessage> getPerNodeData();
+  LocalMember getMyself();
+  GossipSettings getSettings();
+  long nanoTime();
+  long currentTimeMillis();
 }
