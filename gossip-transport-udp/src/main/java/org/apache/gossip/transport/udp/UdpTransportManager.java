@@ -30,6 +30,9 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is constructed by reflection in GossipManager.
@@ -42,11 +45,17 @@ public class UdpTransportManager extends AbstractTransportManager {
   /** The socket used for the passive thread of the gossip service. */
   private final DatagramSocket server;
   
+  private final PassiveGossipThread passiveGossipThread;
+  private final ExecutorService gossipThreadExecutor;
+  
   private final int soTimeout;
   
   /** required for reflection to work! */
   public UdpTransportManager(GossipManager gossipManager, GossipCore gossipCore) {
     super(gossipManager, gossipCore);
+    
+    passiveGossipThread = new PassiveGossipThread(gossipManager, gossipCore);
+    gossipThreadExecutor = Executors.newCachedThreadPool();
     
     soTimeout = gossipManager.getSettings().getGossipInterval() * 2;
     
@@ -63,7 +72,25 @@ public class UdpTransportManager extends AbstractTransportManager {
   @Override
   public void shutdown() {
     server.close();
+    passiveGossipThread.requestStop();
+    gossipThreadExecutor.shutdown();
+    try {
+      boolean result = gossipThreadExecutor.awaitTermination(10, TimeUnit.MILLISECONDS);
+      if (!result) {
+        // common when blocking patterns are used to read data from a socket.
+        LOGGER.warn("executor shutdown timed out");
+      }
+    } catch (InterruptedException e) {
+      LOGGER.error(e);
+    }
+    gossipThreadExecutor.shutdownNow();
+    
     super.shutdown();
+  }
+
+  @Override
+  public void startEndpoint() {
+    gossipThreadExecutor.execute(passiveGossipThread);
   }
 
   /**

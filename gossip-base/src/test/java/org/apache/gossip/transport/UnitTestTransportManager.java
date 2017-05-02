@@ -20,6 +20,7 @@ package org.apache.gossip.transport;
 
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
+import org.apache.gossip.model.Base;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,10 +36,34 @@ public class UnitTestTransportManager extends AbstractTransportManager {
   
   private final URI localEndpoint;
   private BlockingQueue<byte[]> buffers = new ArrayBlockingQueue<byte[]>(1000);
+  private boolean requestEndpointShutdown = false;
+  private Thread endpointConsumer;
   
   public UnitTestTransportManager(GossipManager gossipManager, GossipCore gossipCore) {
     super(gossipManager, gossipCore);
     localEndpoint = gossipManager.getMyself().getUri();
+    endpointConsumer = new Thread("test-endpoint-consumer") {
+      public void run() {
+        while (!requestEndpointShutdown) {
+          try {
+            byte[] buf = gossipManager.getTransportManager().read();
+            try {
+              Base message = gossipManager.getProtocolManager().read(buf);
+              gossipCore.receive(message);
+              gossipManager.getMemberStateRefresher().run();
+            }
+            catch (RuntimeException ex) {
+              LOGGER.error("Unable to process message", ex);
+            }
+          } catch (IOException e) {
+            // InterruptedException are completely normal here because of the blocking lifecycle.
+            if (!(e.getCause() instanceof InterruptedException)) {
+              LOGGER.error(e);
+            }
+          }
+        }
+      }
+    };
   }
 
   @Override
@@ -65,12 +90,15 @@ public class UnitTestTransportManager extends AbstractTransportManager {
   @Override
   public void shutdown() {
     allManagers.remove(localEndpoint);
+    requestEndpointShutdown = true;
+    endpointConsumer.interrupt();
     super.shutdown();
   }
 
   @Override
   public void startEndpoint() {
     allManagers.put(localEndpoint, this);
-    super.startEndpoint();
+    endpointConsumer.start();
   }
+  
 }
