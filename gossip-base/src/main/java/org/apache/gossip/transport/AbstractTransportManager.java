@@ -21,13 +21,8 @@ import com.codahale.metrics.MetricRegistry;
 import org.apache.gossip.manager.AbstractActiveGossiper;
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
-import org.apache.gossip.manager.PassiveGossipThread;
 import org.apache.gossip.utils.ReflectionUtils;
 import org.apache.log4j.Logger;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manage the protcol threads (active and passive gossipers).
@@ -36,15 +31,9 @@ public abstract class AbstractTransportManager implements TransportManager {
   
   public static final Logger LOGGER = Logger.getLogger(AbstractTransportManager.class);
   
-  private final PassiveGossipThread passiveGossipThread;
-  private final ExecutorService gossipThreadExecutor;
-  
   private final AbstractActiveGossiper activeGossipThread;
   
   public AbstractTransportManager(GossipManager gossipManager, GossipCore gossipCore) {
-    
-    passiveGossipThread = new PassiveGossipThread(gossipManager, gossipCore);
-    gossipThreadExecutor = Executors.newCachedThreadPool();
     activeGossipThread = ReflectionUtils.constructWithReflection(
       gossipManager.getSettings().getActiveGossipClass(),
         new Class<?>[]{
@@ -58,30 +47,13 @@ public abstract class AbstractTransportManager implements TransportManager {
   // shut down threads etc.
   @Override
   public void shutdown() {
-    passiveGossipThread.requestStop();
-    gossipThreadExecutor.shutdown();
     if (activeGossipThread != null) {
       activeGossipThread.shutdown();
     }
-    try {
-      boolean result = gossipThreadExecutor.awaitTermination(10, TimeUnit.MILLISECONDS);
-      if (!result) {
-        // common when blocking patterns are used to read data from a socket.
-        LOGGER.warn("executor shutdown timed out");
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error(e);
-    }
-    gossipThreadExecutor.shutdownNow();
   }
 
   @Override
   public void startActiveGossiper() {
     activeGossipThread.init(); 
-  }
-
-  @Override
-  public void startEndpoint() {
-    gossipThreadExecutor.execute(passiveGossipThread);
   }
 }
