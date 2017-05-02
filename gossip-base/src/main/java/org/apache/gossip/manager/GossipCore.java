@@ -212,8 +212,12 @@ public class GossipCore implements GossipCoreConstants {
 
   public void handleResponse(String k, Base v) {
     LatchAndBase latch = requests.get(k);
-    latch.base = v;
-    latch.latch.countDown();
+    if (latch == null) {
+      LOGGER.warn("No latch for " + k);
+    } else {
+      latch.base = v;
+      latch.latch.countDown();
+    }
   }
 
   /**
